@@ -1,29 +1,22 @@
 extern crate glob;
+extern crate walkdir;
 
 use glob::glob;
 use std::env;
-extern crate walkdir;
-extern crate string_parser;
-use string_parser::string_parser_with_line;
+use std::io::{BufReader, BufRead};
+use std::fs::File;
 use colored::*;
+use regex::Regex;
 
 fn main() -> std::io::Result<()> {
     let mut path = String::from(env::current_dir().unwrap().to_str().unwrap());
     path.push_str("/**/*.rs");
 
-    fn end_filter(c : Vec<char>) -> bool{
-        if c.last().unwrap() == &'\n' {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
+    // regex pattern
+    // matches //*todo* case insensitively
+    let pattern: Regex = Regex::new("(?i)^\\s*//\\s*todo.*").unwrap();
 
-    fn callback(s : String, l : usize){
-        println!("{} {} : {}","Line ".green(), l.to_string().green(), s.blue());
-    }
-
+    // All files in a directory
     for entry in match glob(&path) {
         Ok(entry) => entry,
         Err(e) => {
@@ -31,9 +24,27 @@ fn main() -> std::io::Result<()> {
             Err(e).unwrap()
         }
     } {
-        string_parser_with_line(entry.unwrap().to_str().unwrap(), "//todo", end_filter, callback).expect("failed to open file");
+        let path = entry.unwrap();
+        let path = path.to_str().unwrap();
+        let reader = BufReader::new(match File::open(path) {
+            Ok(f) => f,
+            Err(e) => panic!("ERROR!: {}", e),
+        });
+       
+        // All lines in a file
+        for (i, line) in reader.lines().enumerate() {
+            let line = line.unwrap();
+            if pattern.is_match(&line) {
+                // Print out the line if it's a match
+                println!("{} line {} :\t{}", path.green(), i + 1, &line);
+            }
+        }
     }
     Ok(())
 }
 
+// Some tests
 //todo refactor
+// TODO refactor
+//TOODrefactor
+// TODO                           refactor
