@@ -12,12 +12,7 @@ fn main() -> std::io::Result<()> {
     path.push_str("/**/*.rs");
 
     fn end_filter(c : Vec<char>) -> bool{
-        if c.last().unwrap() == &'\n' {
-            return true;
-        }
-        else {
-            return false;
-        }
+        c.last().unwrap() == &'\n'
     }
 
     fn callback(s : String, l : usize){
