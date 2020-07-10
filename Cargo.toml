@@ -1,0 +1,16 @@
+[package]
+name = "cargo-todo"
+version = "0.1.0"
+authors = ["Clément Guiton <clement.guiton.dev@gmail.com>"]
+edition = "2018"
+description = "Cargo tool to display TODOs"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+glob = "0.3.0"
+walkdir = "2.3.1"
+colored = "1.9.3"
+string-parser= "0.1.4"
