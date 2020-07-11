@@ -15,6 +15,7 @@ Line 39 : refactor
 ## Supported tokens
 - //todo
 - todo!()
+- unimplemented!()
 
 ## Regex
 ### cargo todo now support customizable regex

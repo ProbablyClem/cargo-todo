@@ -73,6 +73,14 @@ fn main() -> std::io::Result<()> {
             println!("{} {} {} {} : {}",path.to_str().unwrap(),"TODO".green() ,"Line ".green(), line.to_string().green(), text.blue());
         });
         parsers.push(Parser::new_callback(String::from("todo!("), Box::from(|x : Vec<char>| {if  x.last().unwrap() == &')' {return true;} else { return false}}), _todo_macro_callback));
+
+        //support for unimplemented
+        let _unimplemented_macro_callback = Box::from(|mut text : String, line : usize, file : &str| {
+            let path = Path::new(file).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
+            println!("{} {} {} {} : {}{}{} ",path.to_str().unwrap(),"TODO".green() ,"Line ".green(), line.to_string().green(), "unimplemented!(".blue(), text.magenta(), ")".blue());
+        });
+        parsers.push(Parser::new_callback(String::from("unimplemented!("), Box::from(|x : Vec<char>| {if  x.last().unwrap() == &')' {return true;} else { return false}}), _unimplemented_macro_callback));
+
         
         //loop on every file within the current dir
         for entry in match glob(&path) {
@@ -98,7 +106,7 @@ fn main() -> std::io::Result<()> {
 
 
 // test zone
-//todo refactor
-// fn test(){
-//     todo!("hey");
-// }
+// todo refactor
+fn test(){
+    unimplemented!("hey")
+}
