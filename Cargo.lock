@@ -70,9 +70,9 @@ dependencies = [
 
 [[package]]
 name = "string-parser"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05f9d493cdd2c8628087a4dca95756fda36a5ef3ef246bd9a0ee9f3fe9e495d7"
+checksum = "46e079466fad2cd4673f6ccd80b3a2c8aa94e981a7ab7b4e5c023a0a37e23596"
 
 [[package]]
 name = "walkdir"
