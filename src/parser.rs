@@ -18,6 +18,11 @@ impl Parser {
         Parser{keyword: keyword, end_filter : end_filter, callback}
     }
 
+    pub fn new_callback(keyword : String, end_filter : Box<dyn Fn(Vec<char>) -> bool>, callback : Box<dyn Fn(String, usize, &str)>) -> Parser{
+        
+        Parser{keyword: keyword, end_filter : end_filter, callback}
+    }
+
     fn get_keyword(&self) -> String {
         self.keyword.clone()
     }

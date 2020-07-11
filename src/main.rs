@@ -67,7 +67,12 @@ fn main() -> std::io::Result<()> {
         //we add a parser looking for the //todo keyword
         parsers.push(Parser::new(String::from("//todo"), Box::from(|x : Vec<char>| {if  x.last().unwrap() == &'\n' {return true;} else { return false}})));
         //we add a parser looking for the todo!() token
-        parsers.push(Parser::new(String::from("todo!("), Box::from(|x : Vec<char>| {if  x.last().unwrap() == &')' {return true;} else { return false}})));
+        let _todo_macro_callback = Box::from(|mut text : String, line : usize, file : &str| {
+            text.retain(|c| c != '\"');
+            let path = Path::new(file).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
+            println!("{} {} {} {} : {}",path.to_str().unwrap(),"TODO".green() ,"Line ".green(), line.to_string().green(), text.blue());
+        });
+        parsers.push(Parser::new_callback(String::from("todo!("), Box::from(|x : Vec<char>| {if  x.last().unwrap() == &')' {return true;} else { return false}}), _todo_macro_callback));
         
         //loop on every file within the current dir
         for entry in match glob(&path) {
