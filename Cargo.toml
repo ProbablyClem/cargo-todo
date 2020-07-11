@@ -1,6 +1,6 @@
 [package]
 name = "cargo-todo"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Clément Guiton <clement.guiton.dev@gmail.com>"]
 edition = "2018"
 description = "Cargo tool to display TODOs"
