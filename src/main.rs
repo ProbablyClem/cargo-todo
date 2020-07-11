@@ -81,6 +81,8 @@ fn main() -> std::io::Result<()> {
         });
         parsers.push(Parser::new_callback(String::from("unimplemented!("), Box::from(|x : Vec<char>| {if  x.last().unwrap() == &')' {return true;} else { return false}}), _unimplemented_macro_callback));
 
+        parsers.push(Parser::new(String::from("//fix"), Box::from(|x : Vec<char>| {if  x.last().unwrap() == &'\n' {return true;} else { return false}})));
+
         
         //loop on every file within the current dir
         for entry in match glob(&path) {
