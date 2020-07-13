@@ -19,55 +19,7 @@ mod regex;
 mod token;
 
 fn main() -> std::io::Result<()> {
-    if env::args().last().unwrap() == "regex" {
-
-        let mut path = String::from(dirs::home_dir().unwrap().to_str().unwrap());
-        path.push_str("/.cargo/todo_config");
-        println!("{}",path);
-        fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-            where P: AsRef<Path>, {
-                let file = match File::open(&filename){
-                    Ok(line) => line,
-                    Err(_) => {
-                        println!("{}", "File '~/.cargo/todo_config' not found, creating it".red());
-                        let mut f = OpenOptions::new().write(true).read(true).create(true).open("foo.txt")?;
-                        f.write_all(b"^s*//s*todo\\b\n")?;
-                        f.write_all(b"^s*//s*fix\\b\n")?;
-                        f.write_all(b"^s*//s*fixme\\b\n")?;
-                        f
-                    }
-                };
-                Ok(io::BufReader::new(file).lines())
-        }
-
-        let mut regex = Vec::new();
-        for line in read_lines(path)? {
-            let line = line.unwrap();
-            regex.push(line);
-        }
-
-        let mut path = String::from(env::current_dir().unwrap().to_str().unwrap());
-        path.push_str("/**/*.rs");
-
-        for entry in match glob(&path) {
-            Ok(entry) => entry,
-            Err(e) => {
-                println!("Couldn't access files. Error {}", e);
-                Err(e).unwrap()
-            }
-        } {
-            let path = entry.unwrap();
-            let path = path.to_str().unwrap();
-            
-            //execute each parsers on the current file
-            // for p in &parsers {
-            //         p.parse(path);
-            // }
-                regex_parser(path, regex.clone())?;
-        }
-
-    }
-    else{
+    if env::args().last().unwrap() == "--legacy" {
         //this vector containes all the parsers we want to execute
         let mut parsers : Vec<Parser> = vec!();
     
@@ -110,16 +62,65 @@ fn main() -> std::io::Result<()> {
                     p.parse(path);
             }
         }
+    
+     Ok(())
+
     }
-    
-    Ok(())
-    
+    else{
+        let mut path = String::from(dirs::home_dir().unwrap().to_str().unwrap());
+        path.push_str("/.cargo/todo_config");
+        // println!("{}",path);
+        fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+            where P: AsRef<Path>, {
+                let file = match File::open(&filename){
+                    Ok(line) => line,
+                    Err(_) => {
+                        println!("{}", "File '~/.cargo/todo_config' not found, creating it".red());
+                        let mut f = OpenOptions::new().write(true).read(true).create(true).open("foo.txt")?;
+                        f.write_all(b"^s*//s*todo\\b\n")?;
+                        f.write_all(b"^s*//s*fix\\b\n")?;
+                        f.write_all(b"^s*//s*fixme\\b\n")?;
+                        f
+                    }
+                };
+                Ok(io::BufReader::new(file).lines())
+        }
+
+        let mut regex = Vec::new();
+        for line in read_lines(path)? {
+            let line = line.unwrap();
+            regex.push(line);
+        }
+
+        let mut path = String::from(env::current_dir().unwrap().to_str().unwrap());
+        path.push_str("/**/*.rs");
+
+        for entry in match glob(&path) {
+            Ok(entry) => entry,
+            Err(e) => {
+                println!("Couldn't access files. Error {}", e);
+                Err(e).unwrap()
+            }
+        } {
+            let path = entry.unwrap();
+            let path = path.to_str().unwrap();
+            
+            //execute each parsers on the current file
+            // for p in &parsers {
+            //         p.parse(path);
+            // }
+                regex_parser(path, regex.clone())?;
+        }
+        Ok(())
+}
 }
 
 #[allow(dead_code)]
 // test zone
-//TODO 1 refactor 18-11-2001
-//fixme 5 implement 18-11-2001
+//TODO refactor 18-11-2001
+//todo implement 18/11/2001 5 getters
+//4
+//10/10/10
 fn test(){
-    unimplemented!("hey")
+    todo!("implements getters");
 }
