@@ -1,4 +1,9 @@
+#[macro_use]
+extern crate string_format;
+
 extern crate glob;
+use std::io::Write;
+use std::fs::OpenOptions;
 use crate::regex::regex_parser;
 use std::path::Path;
 use glob::glob;
@@ -12,19 +17,26 @@ use std::io::{self, BufRead};
 mod parser;
 use crate::parser::*;
 mod regex;
+mod token;
+use crate::token::Token;
+
 fn main() -> std::io::Result<()> {
-    if env::args().last().unwrap() == "--regex" {
+    if env::args().last().unwrap() == "regex" {
 
         let mut path = String::from(dirs::home_dir().unwrap().to_str().unwrap());
         path.push_str("/.cargo/todo_config");
         println!("{}",path);
         fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
             where P: AsRef<Path>, {
-                let file = match File::open(filename){
+                let file = match File::open(&filename){
                     Ok(line) => line,
                     Err(_) => {
-                        println!("{}", "File '~/.cargo/todo_config' not found".red());
-                        panic!();
+                        println!("{}", "File '~/.cargo/todo_config' not found, creating it".red());
+                        let mut f = OpenOptions::new().write(true).read(true).create(true).open("foo.txt")?;
+                        f.write_all(b"^s*//s*todo\\b\n")?;
+                        f.write_all(b"^s*//s*fix\\b\n")?;
+                        f.write_all(b"^s*//s*fixme\\b\n")?;
+                        f
                     }
                 };
                 Ok(io::BufReader::new(file).lines())
@@ -75,7 +87,7 @@ fn main() -> std::io::Result<()> {
         parsers.push(Parser::new_callback(String::from("todo!("), Box::from(|x : Vec<char>| {if  x.last().unwrap() == &')' {return true;} else { return false}}), _todo_macro_callback));
 
         //support for unimplemented
-        let _unimplemented_macro_callback = Box::from(|mut text : String, line : usize, file : &str| {
+        let _unimplemented_macro_callback = Box::from(|text : String, line : usize, file : &str| {
             let path = Path::new(file).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
             println!("{} {} {} {} : {}{}{} ",path.to_str().unwrap(),"TODO".green() ,"Line ".green(), line.to_string().green(), "unimplemented!(".blue(), text.magenta(), ")".blue());
         });
@@ -108,7 +120,8 @@ fn main() -> std::io::Result<()> {
 
 
 // test zone
-// todo refactor
+//TODO 1 refactor 18-11-2001
+//fixme 5 implement 18-11-2001
 fn test(){
     unimplemented!("hey")
 }

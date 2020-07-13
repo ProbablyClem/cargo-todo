@@ -64,6 +64,7 @@ dependencies = [
  "glob",
  "regex",
  "string-parser",
+ "string_format",
  "walkdir",
 ]
 
@@ -227,6 +228,12 @@ name = "string-parser"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "46e079466fad2cd4673f6ccd80b3a2c8aa94e981a7ab7b4e5c023a0a37e23596"
+
+[[package]]
+name = "string_format"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a0f5f60043c6e865cc477a5cd3981df2210ec02592bd9ba18d32bcd72abb4eb"
 
 [[package]]
 name = "thread_local"
