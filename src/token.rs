@@ -50,7 +50,7 @@ impl Token {
 impl fmt::Display for Token {
     // This trait requires `fmt` with this exact signature.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut s = String::new();
+        let mut s;
         s = string_format!("{} line: {} {}".to_string(), self.file.clone(), self.line.to_string().green().to_string(), self.keyword.clone().green().to_string());
         if self.priority.is_some(){
             s = string_format!("{}: {}".to_string(), s, self.priority.clone().unwrap());

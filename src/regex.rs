@@ -4,8 +4,6 @@ use std::path::Path;
 extern crate regex;
 use regex::{RegexSet};
 use std::env;
-use colored::Colorize;
-use super::*;
 use crate::token::*;
 
 // The output is wrapped in a Result to allow matching on errors

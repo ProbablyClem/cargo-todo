@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate string_format;
 
 extern crate glob;
@@ -18,7 +17,6 @@ mod parser;
 use crate::parser::*;
 mod regex;
 mod token;
-use crate::token::Token;
 
 fn main() -> std::io::Result<()> {
     if env::args().last().unwrap() == "regex" {
@@ -118,7 +116,7 @@ fn main() -> std::io::Result<()> {
     
 }
 
-
+#[allow(dead_code)]
 // test zone
 //TODO 1 refactor 18-11-2001
 //fixme 5 implement 18-11-2001
