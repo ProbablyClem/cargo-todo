@@ -328,3 +328,4 @@ fn test(){
     todo!("implements getters");
 }
 
+//todo implement 2020/08/14 5 getters !clement
