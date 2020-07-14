@@ -20,13 +20,13 @@ pub fn regex_parser(path : &str, regex : Vec<String>) -> Result<(), io::Error>{
     let set = RegexSet::new(regex).unwrap();
 
     let mut line_cpt = 0;
-    let path = Path::new(path).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
+    // let path = Path::new(path).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
     for line in read_lines(path)? {
         line_cpt +=1;
         let line = line.unwrap();
         if set.is_match(line.to_lowercase().as_str()){
             // println!("{} {}: {}",path.to_str().unwrap(), line_cpt.to_string().green(), line);
-            let t = Token::new(path.to_str().unwrap().to_string(), line_cpt, line);
+            let t = Token::new(path.to_string(), line_cpt, line);
             // t.print();
             println!("{}", t);
         }

@@ -76,18 +76,18 @@ fn main() -> std::io::Result<()> {
                     Ok(line) => line,
                     Err(_) => {
                         println!("{}", "File '~/.cargo/todo_config' not found, creating it".red());
-                        let mut f = OpenOptions::new().write(true).read(true).create(true).open("foo.txt")?;
-                        f.write_all(b"^s*//s*todo\\b\n")?;
-                        f.write_all(b"^s*//s*fix\\b\n")?;
-                        f.write_all(b"^s*//s*fixme\\b\n")?;
-                        f
+                        let mut f = OpenOptions::new().write(true).read(true).create(true).open(&filename).unwrap();
+                        f.write_all(b"^s*//s*todo\\b\n").unwrap();
+                        f.write_all(b"^s*//s*fix\\b\n").unwrap();
+                        f.write_all(b"^s*//s*fixme\\b\n").unwrap();
+                        return read_lines(filename);
                     }
                 };
                 Ok(io::BufReader::new(file).lines())
         }
 
         let mut regex = Vec::new();
-        for line in read_lines(path)? {
+        for line in read_lines(path).unwrap() {
             let line = line.unwrap();
             regex.push(line);
         }
@@ -101,15 +101,20 @@ fn main() -> std::io::Result<()> {
                 println!("Couldn't access files. Error {}", e);
                 Err(e).unwrap()
             }
-        } {
+        } { 
             let path = entry.unwrap();
-            let path = path.to_str().unwrap();
+            let path = Path::new(&path).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
+            // println!("{}", path.to_str().unwrap());
+            if !path.starts_with("target/"){
+                let path = path.to_str().unwrap();
             
             //execute each parsers on the current file
             // for p in &parsers {
             //         p.parse(path);
             // }
                 regex_parser(path, regex.clone())?;
+            }
+            
         }
         Ok(())
 }
