@@ -4,10 +4,11 @@ extern crate walkdir;
 extern crate string_parser;
 extern crate dirs;
 extern crate glob;
-
+extern crate chrono;
 use glob::glob;
 use colored::Colorize;
 use clap::{Arg, App, SubCommand};
+use chrono::NaiveDate;
 
 //local files
 mod parser;
@@ -27,7 +28,6 @@ use std::io::{self, BufRead};
 
 
 
-
 fn main() -> std::io::Result<()> {
 
     let matches = App::new("Cargo-todo")
@@ -43,22 +43,36 @@ fn main() -> std::io::Result<()> {
                                 .help("filter todos to show")
                                 .short("f")
                                 .long("filter")
-                                .takes_value(true))
+                                .takes_value(true)
+                                .multiple(true)
+                                .min_values(1))
                           .arg(Arg::with_name("verbose")
                                .short("v")
                                .long("verbose")
                                .multiple(true)
                                .help("Sets the level of verbosity"))
+                            .arg(Arg::with_name("exclude")
+                                .short("x")
+                                .long("exclude")
+                                .takes_value(true)
+                                .multiple(true)
+                                .help("Exclude some todos from the list"))
+                            .arg(Arg::with_name("list")
+                                .short("l")
+                                .long("list")
+                                .takes_value(true)
+                                .help("Number of values to display"))
+                            .arg(Arg::with_name("sort")
+                                .short("s")
+                                .long("short")
+                                .takes_value(true)
+                                .possible_values(&["priority", "deadline"])
+                                .help("sort todo by priority or deadline")
+                        )       
                           .subcommand(SubCommand::with_name("legacy")
                                 .about("launch program in legacy mode (supports todo!(), etc..."))
                           .get_matches();
 
-    match matches.occurrences_of("v") {
-    0 => println!("Some verbose info"),
-    1 => println!("less verbose info"),
-    2 => println!("Some verbose info"),
-    3 | _ => println!("you already see everything"),
-    }
 
     if let Some(_matches) = matches.subcommand_matches("legacy") {
         let mut parsers : Vec<Parser> = vec!();
@@ -152,15 +166,106 @@ fn main() -> std::io::Result<()> {
             if !path.starts_with("target/"){
                 let path = path.to_str().unwrap();
             
-                
-                match regex_parser(path, regex.clone()){
-                    Ok(mut t) => {
-                        tokens.append(&mut t);
-                    },
-                    Err(e) => eprintln!{"{}", e},
+                if matches.occurrences_of("verbose") == 0 || matches.occurrences_of("verbose") == 2{
+                    match regex_parser(path, regex.clone(), 2){
+                        Ok(mut t) => {
+                            tokens.append(&mut t);
+                        },
+                        Err(e) => eprintln!{"{}", e},
+                    }
                 }
+                else {
+                    match regex_parser(path, regex.clone(), 1){
+                        Ok(mut t) => {
+                            tokens.append(&mut t);
+                        },
+                        Err(e) => eprintln!{"{}", e},
+                    }
+                }
+                
             }
             
+        }
+        
+        if matches.is_present("sort"){
+            if matches.value_of("sort").unwrap() == "priority"{
+                fn token_priority_sort(t : &Token) ->  String {
+
+                    if t.priority.is_none() {
+                        return String::from("z");
+                    }
+                    else {
+                        return t.priority.clone().unwrap()
+                    }
+                }
+                tokens.sort_unstable_by_key(token_priority_sort);
+            }
+            else if matches.value_of("sort").unwrap() == "deadline"{
+                fn token_deadline_sort(t : &Token) ->  NaiveDate {
+
+                    if t.date.is_none() {
+                        return NaiveDate::from_ymd(3000,01,01);
+                    }
+                    else {
+                        return t.date.clone().unwrap()
+                    }
+                }
+                tokens.sort_unstable_by_key(token_deadline_sort);
+            }
+        }
+        
+        if matches.is_present("list"){
+            let lines = match matches.value_of("list").unwrap().parse::<usize>(){
+                Ok(lines) => lines,
+                Err(_) => {
+                    eprintln!("{}", "list argument should be a valid number!".red());
+                    panic!()
+            }}; 
+
+            let mut new_tokens : Vec<Token> = Vec::new();
+            for i in tokens{
+                    if new_tokens.len() < lines{
+                        &new_tokens.push(i.clone());
+                    }
+                    else
+                        {
+                        break;
+                    }
+                }
+            tokens = new_tokens;
+        }
+        // println!("Using input file: {}", matches.value_of("filter").unwrap());
+        if matches.is_present("filter"){
+            let filters : Vec<&str> = matches.values_of("filter").unwrap().collect();
+            let mut new_tokens : Vec<Token> = Vec::new();
+            for i in tokens{
+                for y in &filters {
+                    if i.keyword == String::from(*y){
+                        &new_tokens.push(i.clone());
+                        break;
+                    }
+                }
+            }
+            tokens = new_tokens;
+            // tokens = new.into_iter().filter(|t| t.keyword == String::from(matches.value_of("filter").unwrap())).collect();
+        }
+
+        if matches.is_present("exclude"){
+            let excludes : Vec<&str> = matches.values_of("exclude").unwrap().collect();
+            let mut new_tokens : Vec<Token> = Vec::new();
+            for i in tokens{
+                for y in 0..excludes.len() {
+                    if i.keyword == String::from(excludes[y]){
+                        break;
+                    }
+                    else if y == excludes.len() -1{
+                        &new_tokens.push(i.clone());
+                    }     
+                }
+                
+            }
+            tokens = new_tokens;
+            // tokens = new.into_iter().filter(|t| t.keyword == String::from(matches.value_of("filter").unwrap())).collect();
         }
         if matches.is_present("inline"){
             for i in tokens{
@@ -179,10 +284,12 @@ fn main() -> std::io::Result<()> {
 
 #[allow(dead_code)]
 // test zone
-//TODO refactor 18-11-2001
-//todo implement 18/11/2001 5 getters
+//TODO refactor
+//todo implement 2001/11/01 3 getters
+//fix implement 18/11/2001 getters
 //4
 //10/10/10
 fn test(){
     todo!("implements getters");
 }
+

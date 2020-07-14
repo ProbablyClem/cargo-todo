@@ -15,7 +15,7 @@ where P: AsRef<Path>, {
     Ok(io::BufReader::new(file).lines())
 }
 
-pub fn regex_parser(path : &str, regex : Vec<String>) -> Result<Vec<Token>, io::Error>{
+pub fn regex_parser(path : &str, regex : Vec<String>, verbosity : i8) -> Result<Vec<Token>, io::Error>{
 
     let set = RegexSet::new(regex).unwrap();
     let mut tokens = Vec::new();
@@ -24,7 +24,7 @@ pub fn regex_parser(path : &str, regex : Vec<String>) -> Result<Vec<Token>, io::
         line_cpt +=1;
         let line = line.unwrap();
         if set.is_match(line.to_lowercase().as_str()){
-            tokens.push(Token::new(path.to_string(), line_cpt, line));
+            tokens.push(Token::new(path.to_string(), line_cpt, line, verbosity));
             // println!("{}", t);
         }
     }
