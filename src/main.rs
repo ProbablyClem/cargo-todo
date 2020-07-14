@@ -28,8 +28,38 @@ use std::io::{self, BufRead};
 
 
 fn main() -> std::io::Result<()> {
-    if env::args().last().unwrap() == "--legacy" {
-        //this vector containes all the parsers we want to execute
+
+    let matches = App::new("Cargo-todo")
+                          .author("Clément Guiton <clement.guiton.dev@gmail.com>")
+                          .about("cargo tool to find TODOs in your code")
+                          .arg(Arg::with_name("inline")
+                               .short("i")
+                               .long("inline")
+                               .value_name("inline")
+                               .help("display todos in one line")
+                               .takes_value(false))
+                          .arg(Arg::with_name("filter")
+                                .help("filter todos to show")
+                                .short("f")
+                                .long("filter")
+                                .takes_value(true))
+                          .arg(Arg::with_name("verbose")
+                               .short("v")
+                               .long("verbose")
+                               .multiple(true)
+                               .help("Sets the level of verbosity"))
+                          .subcommand(SubCommand::with_name("legacy")
+                                .about("launch programe in legacy mode (supports todo!(), etc..."))
+                          .get_matches();
+
+    match matches.occurrences_of("v") {
+    0 => println!("Some verbose info"),
+    1 => println!("less verbose info"),
+    2 => println!("Some verbose info"),
+    3 | _ => println!("you already see everything"),
+    }
+
+    if let Some(matches) = matches.subcommand_matches("legacy") {
         let mut parsers : Vec<Parser> = vec!();
     
         let mut path = String::from(env::current_dir().unwrap().to_str().unwrap());
@@ -40,15 +70,13 @@ fn main() -> std::io::Result<()> {
         //we add a parser looking for the todo!() token
         let _todo_macro_callback = Box::from(|mut text : String, line : usize, file : &str| {
             text.retain(|c| c != '\"');
-            let path = Path::new(file).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
-            println!("{} {} {} {} : {}",path.to_str().unwrap(),"TODO".green() ,"Line ".green(), line.to_string().green(), text.blue());
+            println!("{} {} {} {} : {}",file,"TODO".green() ,"Line ".green(), line.to_string().green(), text.blue());
         });
         parsers.push(Parser::new_callback(String::from("todo!("), Box::from(|x : Vec<char>| {if  x.last().unwrap() == &')' {return true;} else { return false}}), _todo_macro_callback));
 
         //support for unimplemented
         let _unimplemented_macro_callback = Box::from(|text : String, line : usize, file : &str| {
-            let path = Path::new(file).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
-            println!("{} {} {} {} : {}{}{} ",path.to_str().unwrap(),"TODO".green() ,"Line ".green(), line.to_string().green(), "unimplemented!(".blue(), text.magenta(), ")".blue());
+            println!("{} {} {} {} : {}{}{} ",file,"TODO".green() ,"Line ".green(), line.to_string().green(), "unimplemented!(".blue(), text.magenta(), ")".blue());
         });
         parsers.push(Parser::new_callback(String::from("unimplemented!("), Box::from(|x : Vec<char>| {if  x.last().unwrap() == &')' {return true;} else { return false}}), _unimplemented_macro_callback));
 
@@ -63,17 +91,21 @@ fn main() -> std::io::Result<()> {
                 Err(e).unwrap()
             }
         } {
-            let path = entry.unwrap();
-            let path = path.to_str().unwrap();
             
+            let path = entry.unwrap();
+            let path = Path::new(&path).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
+            if !path.starts_with("target/"){
+                let path = path.to_str().unwrap();
             //execute each parsers on the current file
             for p in &parsers {
-                    p.parse(path);
+                p.parse(path);
+                }
             }
+
+            
         }
     
      Ok(())
-
     }
     else{
         let mut path = String::from(dirs::home_dir().unwrap().to_str().unwrap());

@@ -12,8 +12,8 @@ pub struct Parser{
 impl Parser {
     pub fn new(keyword : String, end_filter : Box<dyn Fn(Vec<char>) -> bool>) -> Parser{
         let callback = Box::from(|text : String, line : usize, file : &str| {
-            let path = Path::new(file).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
-            println!("{} {} {} {} : {}",path.to_str().unwrap(),"TODO".green() ,"Line ".green(), line.to_string().green(), text.blue());
+            // let path = Path::new(file).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
+            println!("{} {} {} {} : {}",file,"TODO".green() ,"Line ".green(), line.to_string().green(), text.blue());
         });
         Parser{keyword: keyword, end_filter : end_filter, callback}
     }
