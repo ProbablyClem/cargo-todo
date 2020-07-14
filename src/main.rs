@@ -73,9 +73,10 @@ fn main() -> std::io::Result<()> {
                                 .long("member")
                                 .takes_value(true)
                                 .multiple(true) 
-                                .min_values(1))
+                                .min_values(1)
+                                .help("Filter from member"))
                           .subcommand(SubCommand::with_name("legacy")
-                                .about("launch program in legacy mode (supports todo!(), etc..."))
+                                .about("Launch program in legacy mode (supports todo!(), etc..."))
                           .get_matches();
 
 
