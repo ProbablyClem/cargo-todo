@@ -1,22 +1,31 @@
 extern crate string_format;
-
-extern crate glob;
-use std::io::Write;
-use std::fs::OpenOptions;
-use crate::regex::regex_parser;
-use std::path::Path;
-use glob::glob;
-use std::env;
+extern crate clap;
 extern crate walkdir;
 extern crate string_parser;
 extern crate dirs;
+extern crate glob;
+
+use glob::glob;
 use colored::Colorize;
-use std::fs::File;
-use std::io::{self, BufRead};
+use clap::{Arg, App, SubCommand};
+
+//local files
 mod parser;
-use crate::parser::*;
 mod regex;
 mod token;
+use crate::parser::*;
+use crate::regex::regex_parser;
+
+//std
+use std::io::Write;
+use std::fs::OpenOptions;
+use std::env;
+use std::path::Path;
+use std::fs::File;
+use std::io::{self, BufRead};
+
+
+
 
 fn main() -> std::io::Result<()> {
     if env::args().last().unwrap() == "--legacy" {

@@ -1,8 +1,9 @@
 extern crate string_format;
+extern crate regex;
+
 use string_format::string_format;
 use std::fmt;
 use colored::Colorize;
-extern crate regex;
 use regex::Regex;
 
 pub struct Token{
