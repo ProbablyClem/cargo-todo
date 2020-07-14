@@ -15,7 +15,8 @@ pub struct Token{
         pub keyword : String,
         pub comment : Option<String>,
         pub priority : Option<String>,
-        pub date : Option<NaiveDate>, 
+        pub date : Option<NaiveDate>,
+        pub member : Option<String>, 
         verbosity : i8,
 }
 
@@ -25,6 +26,7 @@ impl Token {
         let fields : Vec<&str>= s.split_whitespace().collect();
         let number_regex = Regex::new("\\b[1-9]\\b").unwrap();
         let date_regex = Regex::new("(\\d*/\\d*/\\d*)").unwrap();
+        let member_regex = Regex::new("!\\w*").unwrap();
         if date_regex.is_match("5") {
             panic!("regex");
         }
@@ -39,6 +41,7 @@ impl Token {
                 comment : None,
                 priority : None,
                 date : None,
+                member : None,
                 verbosity : verbosity
             };
 
@@ -53,6 +56,15 @@ impl Token {
                 let date : Vec<&str> = fields[i].split("/").collect();
                 t.date = NaiveDate::from_ymd_opt(date[0].parse::<i32>().unwrap(), date[1].parse::<u32>().unwrap(), date[2].parse::<u32>().unwrap());
                 // t.date = Some(fields[i].to_string());
+            }
+            else if member_regex.is_match(fields[i]){
+                let mut member = String::new(); //from(fields[i].clone()).chars().next().map(|c| &s[c.len_utf8()..]).unwrap();
+                let it = fields[i].chars().skip(1);
+                for i in it{
+                    member.push(i);
+                }
+
+                t.member = Some(member);
             }
             else {
                 if t.comment.is_none(){
@@ -70,6 +82,9 @@ impl Token {
     pub fn inline(&self) {
         let mut s;
         s = string_format!("{} line: {} {} ".to_string(), self.file.clone(), self.line.to_string().green().to_string(), self.keyword.clone().green().to_string());
+        if self.member.is_some(){
+            s = string_format!("{} Member: {}".to_string(),s ,self.member.clone().unwrap().red().to_string());
+        }
         if self.priority.is_some(){
             s = string_format!("{} Priority: {}".to_string(), s, self.priority.clone().unwrap().red().to_string());
         }
@@ -98,6 +113,9 @@ impl fmt::Display for Token {
             }
         }
         else {
+        if self.member.is_some(){
+            s = string_format!("{}Member: {}\n".to_string(),s ,self.member.clone().unwrap().red().to_string());
+        }
         if self.priority.is_some(){
             s = string_format!("{}Priority: {}\n".to_string(), s, self.priority.clone().unwrap().red().to_string());
         }

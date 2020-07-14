@@ -40,7 +40,7 @@ fn main() -> std::io::Result<()> {
                                .help("display todos in one line")
                                .takes_value(false))
                           .arg(Arg::with_name("filter")
-                                .help("filter todos to show")
+                                .help("Filter todos to show")
                                 .short("f")
                                 .long("filter")
                                 .takes_value(true)
@@ -64,11 +64,16 @@ fn main() -> std::io::Result<()> {
                                 .help("Number of values to display"))
                             .arg(Arg::with_name("sort")
                                 .short("s")
-                                .long("short")
+                                .long("sort")
                                 .takes_value(true)
-                                .possible_values(&["priority", "deadline"])
-                                .help("sort todo by priority or deadline")
-                        )       
+                                .possible_values(&["priority", "deadline", "member"])
+                                .help("Sort todos"))
+                            .arg(Arg::with_name("member")
+                                .short("m")
+                                .long("member")
+                                .takes_value(true)
+                                .multiple(true) 
+                                .min_values(1))
                           .subcommand(SubCommand::with_name("legacy")
                                 .about("launch program in legacy mode (supports todo!(), etc..."))
                           .get_matches();
@@ -212,6 +217,18 @@ fn main() -> std::io::Result<()> {
                 }
                 tokens.sort_unstable_by_key(token_deadline_sort);
             }
+            else if matches.value_of("sort").unwrap() == "member"{
+                fn token_member_sort(t : &Token) ->  String {
+
+                    if t.priority.is_none() {
+                        return String::from("z");
+                    }
+                    else {
+                        return t.priority.clone().unwrap()
+                    }
+                }
+                tokens.sort_unstable_by_key(token_member_sort);
+            }
         }
         
         if matches.is_present("list"){
@@ -234,7 +251,23 @@ fn main() -> std::io::Result<()> {
                 }
             tokens = new_tokens;
         }
-        // println!("Using input file: {}", matches.value_of("filter").unwrap());
+
+        if matches.is_present("member"){
+            let filters : Vec<&str> = matches.values_of("member").unwrap().collect();
+            let mut new_tokens : Vec<Token> = Vec::new();
+            for i in tokens{
+                // println!("{}", i);
+                for y in &filters {
+                    if i.member.clone().is_some() && i.member.clone().unwrap() == *y.to_string(){
+                        println!("pushing");
+                        &new_tokens.push(i.clone());
+                        break;
+                    }
+                }
+            }
+            tokens = new_tokens;
+        }
+
         if matches.is_present("filter"){
             let filters : Vec<&str> = matches.values_of("filter").unwrap().collect();
             let mut new_tokens : Vec<Token> = Vec::new();
@@ -285,7 +318,8 @@ fn main() -> std::io::Result<()> {
 #[allow(dead_code)]
 // test zone
 //TODO refactor
-//todo implement 2001/11/01 3 getters
+//todo implement 2001/11/01 3 getters !clement
+//todo implement 2001/11/01 3 getters !thomas
 //fix implement 18/11/2001 getters
 //4
 //10/10/10
