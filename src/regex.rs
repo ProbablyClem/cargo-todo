@@ -15,18 +15,18 @@ where P: AsRef<Path>, {
     Ok(io::BufReader::new(file).lines())
 }
 
-pub fn regex_parser(path : &str, regex : Vec<String>) -> Result<(), io::Error>{
+pub fn regex_parser(path : &str, regex : Vec<String>) -> Result<Vec<Token>, io::Error>{
 
     let set = RegexSet::new(regex).unwrap();
-
+    let mut tokens = Vec::new();
     let mut line_cpt = 0;
     for line in read_lines(path)? {
         line_cpt +=1;
         let line = line.unwrap();
         if set.is_match(line.to_lowercase().as_str()){
-            let t = Token::new(path.to_string(), line_cpt, line);
-            println!("{}", t);
+            tokens.push(Token::new(path.to_string(), line_cpt, line));
+            // println!("{}", t);
         }
     }
-    Ok(())
+    Ok(tokens)
 }

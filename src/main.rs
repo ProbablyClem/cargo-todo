@@ -15,6 +15,7 @@ mod regex;
 mod token;
 use crate::parser::*;
 use crate::regex::regex_parser;
+use crate::token::Token;
 
 //std
 use std::io::Write;
@@ -49,7 +50,7 @@ fn main() -> std::io::Result<()> {
                                .multiple(true)
                                .help("Sets the level of verbosity"))
                           .subcommand(SubCommand::with_name("legacy")
-                                .about("launch programe in legacy mode (supports todo!(), etc..."))
+                                .about("launch program in legacy mode (supports todo!(), etc..."))
                           .get_matches();
 
     match matches.occurrences_of("v") {
@@ -59,7 +60,7 @@ fn main() -> std::io::Result<()> {
     3 | _ => println!("you already see everything"),
     }
 
-    if let Some(matches) = matches.subcommand_matches("legacy") {
+    if let Some(_matches) = matches.subcommand_matches("legacy") {
         let mut parsers : Vec<Parser> = vec!();
     
         let mut path = String::from(env::current_dir().unwrap().to_str().unwrap());
@@ -108,6 +109,8 @@ fn main() -> std::io::Result<()> {
      Ok(())
     }
     else{
+        let mut tokens : Vec<Token> = Vec::new();
+
         let mut path = String::from(dirs::home_dir().unwrap().to_str().unwrap());
         path.push_str("/.cargo/todo_config");
         // println!("{}",path);
@@ -149,14 +152,27 @@ fn main() -> std::io::Result<()> {
             if !path.starts_with("target/"){
                 let path = path.to_str().unwrap();
             
-            //execute each parsers on the current file
-            // for p in &parsers {
-            //         p.parse(path);
-            // }
-                regex_parser(path, regex.clone())?;
+                
+                match regex_parser(path, regex.clone()){
+                    Ok(mut t) => {
+                        tokens.append(&mut t);
+                    },
+                    Err(e) => eprintln!{"{}", e},
+                }
             }
             
         }
+        if matches.is_present("inline"){
+            for i in tokens{
+                i.inline();
+            }
+        }
+        else {
+            for i in tokens {
+                println!("{}", i);
+            }
+        }
+        
         Ok(())
 }
 }

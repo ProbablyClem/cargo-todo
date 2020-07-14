@@ -60,6 +60,21 @@ impl Token {
         t
     }
 
+    pub fn inline(&self) {
+        let mut s;
+        s = string_format!("{} line: {} {} ".to_string(), self.file.clone(), self.line.to_string().green().to_string(), self.keyword.clone().green().to_string());
+        if self.priority.is_some(){
+            s = string_format!("{} Priority: {}".to_string(), s, self.priority.clone().unwrap().red().to_string());
+        }
+        if self.date.is_some(){
+            s = string_format!("{} Deadline: {}".to_string(), s, self.date.clone().unwrap().red().to_string());
+        }
+        if self.comment.is_some() {
+            s = string_format!("{} {}".to_string(), s, self.comment.clone().unwrap().blue().to_string());
+        }
+        println!("{}", s);
+    }
+
 }
 
 // To use the `{}` marker, the trait `fmt::Display` must be implemented
