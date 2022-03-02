@@ -26,8 +26,6 @@ use std::path::Path;
 use std::fs::File;
 use std::io::{self, BufRead};
 
-
-
 fn main() -> std::io::Result<()> {
 
     let matches = App::new("Cargo-todo")
@@ -82,7 +80,6 @@ fn main() -> std::io::Result<()> {
                                 .about("Launch program in legacy mode (supports todo!(), etc..."))
                           .get_matches();
 
-
     if let Some(_matches) = matches.subcommand_matches("legacy") {
         let mut parsers : Vec<Parser> = vec!();
     
@@ -124,9 +121,7 @@ fn main() -> std::io::Result<()> {
             for p in &parsers {
                 p.parse(path);
                 }
-            }
-
-            
+            }   
         }
     
      Ok(())
