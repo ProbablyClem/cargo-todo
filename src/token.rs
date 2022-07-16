@@ -7,6 +7,7 @@ use string_format::string_format;
 use std::fmt;
 use colored::Colorize;
 use regex::Regex;
+use std::error::Error;
 
 #[derive(Clone)]
 pub struct Token{
@@ -21,9 +22,11 @@ pub struct Token{
 }
 
 impl Token {
-    pub fn new (file : String, line : usize, s : String, verbosity : i8) -> Token{
+    pub fn new (file : String, line : usize, keyword: String, s : String, verbosity : i8) -> Option<Token>{
         // println!("{}", s);
-        let fields : Vec<&str>= s.split_whitespace().collect();
+
+        let content = s.chars().skip(keyword.len()).collect::<String>(); // the content of the line after the keyword
+        let fields : Vec<&str>= content.split_whitespace().collect();
         let number_regex = Regex::new("\\b[1-9]\\b").unwrap();
         let date_regex = Regex::new("(\\d*/\\d*/\\d*)").unwrap();
         let member_regex = Regex::new("!\\w*").unwrap();
@@ -37,7 +40,7 @@ impl Token {
         let mut t = Token {
                 file : file,
                 line : line,
-                keyword: "todo".to_string(),
+                keyword: keyword.trim().to_string(),
                 comment : None,
                 priority : None,
                 date : None,
@@ -46,16 +49,11 @@ impl Token {
             };
 
         for i in 0..fields.len() {
-            if i == 0{
-                t.keyword = fields[0].to_string().to_lowercase();
-            }
-            else if number_regex.is_match(fields[i]) {
-                t.priority = Some(fields[i].to_string());
-            }
-            else if date_regex.is_match(fields[i]){
-                let date : Vec<&str> = fields[i].split("/").collect();
-                t.date = NaiveDate::from_ymd_opt(date[0].parse::<i32>().unwrap(), date[1].parse::<u32>().unwrap(), date[2].parse::<u32>().unwrap());
-                // t.date = Some(fields[i].to_string());
+            if date_regex.is_match(fields[i]){
+                t.date = parse_date(fields[i]).unwrap_or_else(|_| {
+                         t.add_to_comment(fields[i]); //If we couldn't parse the date, it's part of the comment 
+                         None
+                    });
             }
             else if member_regex.is_match(fields[i]){
                 let mut member = String::new(); //from(fields[i].clone()).chars().next().map(|c| &s[c.len_utf8()..]).unwrap();
@@ -67,16 +65,11 @@ impl Token {
                 t.member = Some(member);
             }
             else {
-                if t.comment.is_none(){
-                    t.comment = Some(fields[i].to_string());
-                }
-                else{
-                t.comment = Some(string_format!("{} {}".to_string(),t.comment.unwrap(), fields[i].to_string()));
-                }
+                t.add_to_comment(fields[i]);
             }
         }
 
-        t
+        Some(t)
     }
 
     pub fn inline(&self) {
@@ -97,7 +90,24 @@ impl Token {
         println!("{}", s);
     }
 
+    fn add_to_comment(&mut self, s : &str) {
+        if self.comment.is_none(){
+            self.comment = Some(s.to_string());
+        }
+        else {
+            self.comment = Some(string_format!("{} {}".to_string(), self.comment.clone().unwrap(), s.to_string()));
+        }
+    }
 }
+
+fn parse_date(fields : &str) -> Result<Option<NaiveDate>, Box<dyn Error>>{
+    let date : Vec<&str> = fields.split("/").collect();
+    let y : i32 = date[0].parse::<i32>()?;
+    let m : u32 = date[1].parse::<u32>()?;
+    let d : u32 = date[2].parse::<u32>()?;
+    return Ok(NaiveDate::from_ymd_opt(y, m, d));
+}
+
 
 // To use the `{}` marker, the trait `fmt::Display` must be implemented
 // manually for the type.

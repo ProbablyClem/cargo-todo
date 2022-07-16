@@ -15,7 +15,7 @@ mod parser;
 mod regex;
 mod token;
 use crate::parser::*;
-use crate::regex::regex_parser;
+use crate::regex::RegexParser;
 use crate::token::Token;
 
 //std
@@ -125,8 +125,6 @@ fn main() -> std::io::Result<()> {
                 p.parse(path);
                 }
             }
-
-            
         }
     
      Ok(())
@@ -144,20 +142,23 @@ fn main() -> std::io::Result<()> {
                     Err(_) => {
                         println!("{}", "File '~/.cargo/todo_config' not found, creating it".red());
                         let mut f = OpenOptions::new().write(true).read(true).create(true).open(&filename).unwrap();
-                        f.write_all(b"^s*//s*todo\\b\n").unwrap();
-                        f.write_all(b"^s*//s*fix\\b\n").unwrap();
-                        f.write_all(b"^s*//s*fixme\\b\n").unwrap();
+                        f.write_all(b"(?i)^\\s*//\\s*todo\\b\n").unwrap();
+                        f.write_all(b"(?i)^\\s*//\\s*fix\\b\n").unwrap();
+                        f.write_all(b"(?i)^\\s*//\\s*fixme\\b\n").unwrap();
                         return read_lines(filename);
                     }
                 };
                 Ok(io::BufReader::new(file).lines())
         }
-
-        let mut regex = Vec::new();
+        
+        let verbosity : i8 = if (matches.occurrences_of("verbose") == 0 || matches.occurrences_of("verbose") == 2){ 2 } else { 1 };
+        let mut patterns = Vec::new();
         for line in read_lines(path).unwrap() {
             let line = line.unwrap();
-            regex.push(line);
+            patterns.push(line);
         }
+        let regex_parser = RegexParser::new(&patterns, verbosity);
+        
 
         let mut path = String::from(env::current_dir().unwrap().to_str().unwrap());
         path.push_str("/**/*.rs");
@@ -174,26 +175,14 @@ fn main() -> std::io::Result<()> {
             // println!("{}", path.to_str().unwrap());
             if !path.starts_with("target/"){
                 let path = path.to_str().unwrap();
-            
-                if matches.occurrences_of("verbose") == 0 || matches.occurrences_of("verbose") == 2{
-                    match regex_parser(path, regex.clone(), 2){
+                ;
+                 match regex_parser.parse(path){
                         Ok(mut t) => {
                             tokens.append(&mut t);
                         },
                         Err(e) => eprintln!{"{}", e},
-                    }
-                }
-                else {
-                    match regex_parser(path, regex.clone(), 1){
-                        Ok(mut t) => {
-                            tokens.append(&mut t);
-                        },
-                        Err(e) => eprintln!{"{}", e},
-                    }
-                }
-                
+                    }                
             }
-            
         }
         
         if matches.is_present("sort"){
@@ -327,6 +316,7 @@ fn main() -> std::io::Result<()> {
 //fix implement 18/11/2001 getters
 //4
 //10/10/10
+     // TODO qdzdqzd
 fn test(){
     todo!("implements getters");
 }
