@@ -10,7 +10,7 @@ $ cargo install cargo-todo
 
 you can add parameters to you TODOs
 ```
-//todo 18-11-2001 5 !clement implement getters
+//todo 2001/11/01 5 !clement implement getters
 ```
 The supported parameters are : </br>
  * Priority : A number between 1 and 9
@@ -31,12 +31,11 @@ implement getters
 ```
 
 ### Default supported regex
- * ^s*//s*todo\b (//todo)
- * ^s*//s*fix\b (//fix)
- * ^s*//s*fixme\b (//fixme)
+ * (?i)^\s*//\s*todo\b (//todo)
+ * (?i)^\s*//\s*fix\b (//fix)
+ * (?i)^\s*//\s*fixme\b (//fixme)
 ### cargo todo now support customizable regex
 add all your customs regex in the ~/.cargo/todo_config file (will be created at launch)
-</br>all regex are case-insensitive </br>
 ## Features
  * -i, --inline : display todo in one line
  ```rust
@@ -102,4 +101,4 @@ src/main.rs TODO Line  125 : implement getters
 
 
 ### /!\ WARNING
-cargo todo will no longer use regex but only the default tokens listed above
+in legacy mode, cargo todo will no longer use regex but only the default tokens listed above
