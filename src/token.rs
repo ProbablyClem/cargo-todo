@@ -29,7 +29,7 @@ impl Token {
         let fields : Vec<&str>= content.split_whitespace().collect();
         let number_regex = Regex::new("\\b[1-9]\\b").unwrap();
         let date_regex = Regex::new("(\\d*/\\d*/\\d*)").unwrap();
-        let member_regex = Regex::new("!\\w*").unwrap();
+        let member_regex = Regex::new("^!").unwrap();
         if date_regex.is_match("5") {
             panic!("regex");
         }
