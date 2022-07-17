@@ -7,6 +7,8 @@ use std::error::Error;
 use regex::{Regex};
 use crate::token::*;
 
+
+#[derive(Clone)]
 pub struct RegexParser {
     regexes: Vec<Regex>,
     verbosity: i8,

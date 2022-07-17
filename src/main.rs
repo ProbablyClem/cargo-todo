@@ -25,6 +25,8 @@ use std::env;
 use std::path::Path;
 use std::fs::File;
 use std::io::{self, BufRead};
+use std::sync::{Arc, Mutex};
+use std::thread;
 
 
 
@@ -130,7 +132,7 @@ fn main() -> std::io::Result<()> {
      Ok(())
     }
     else{
-        let mut tokens : Vec<Token> = Vec::new();
+        let tokens_arc = Arc::new(Mutex::new(vec![]));  
 
         let mut path = String::from(dirs::home_dir().unwrap().to_str().unwrap());
         path.push_str("/.cargo/todo_config");
@@ -163,27 +165,46 @@ fn main() -> std::io::Result<()> {
         let mut path = String::from(env::current_dir().unwrap().to_str().unwrap());
         path.push_str("/**/*.rs");
 
+        let mut thread_handles = vec![];
+
         for entry in match glob(&path) {
             Ok(entry) => entry,
             Err(e) => {
                 println!("Couldn't access files. Error {}", e);
                 Err(e).unwrap()
             }
-        } { 
-            let path = entry.unwrap();
-            let path = Path::new(&path).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
-            // println!("{}", path.to_str().unwrap());
-            if !path.starts_with("target/"){
-                let path = path.to_str().unwrap();
-                ;
-                 match regex_parser.parse(path){
-                        Ok(mut t) => {
-                            tokens.append(&mut t);
-                        },
-                        Err(e) => eprintln!{"{}", e},
-                    }                
-            }
+        } {
+             thread_handles.push(thread::spawn({
+                 let clone = Arc::clone(&tokens_arc);
+                 let regex_parser = regex_parser.clone();
+                    move || {
+                let path = entry.unwrap();
+                    let path = Path::new(&path).strip_prefix(env::current_dir().unwrap().to_str().unwrap()).unwrap();
+                    // println!("{}", path.to_str().unwrap());
+                    if !path.starts_with("target/"){
+                        let path = path.to_str().unwrap();
+
+                        match regex_parser.parse(path){
+                                Ok(mut t) => {
+                                     let mut v = clone.lock().unwrap();
+                                     v.append(&mut t);
+                                },
+                                Err(e) => {
+                                    eprintln!{"{}", e};
+                                }
+                        }  
+         }}}));
         }
+        
+
+        
+        for thread_handle in thread_handles {
+            thread_handle.join().unwrap();
+        }
+        
+        let tokens_mutex = Arc::clone(&tokens_arc);
+        let mut tokens = tokens_mutex.lock().unwrap().clone();
+
         
         if matches.is_present("sort"){
             if matches.value_of("sort").unwrap() == "priority"{
