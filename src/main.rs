@@ -144,9 +144,9 @@ fn main() -> std::io::Result<()> {
                     Err(_) => {
                         println!("{}", "File '~/.cargo/todo_config' not found, creating it".red());
                         let mut f = OpenOptions::new().write(true).read(true).create(true).open(&filename).unwrap();
-                        f.write_all(b"(?i)^\\s*//\\s*todo\\b\n").unwrap();
-                        f.write_all(b"(?i)^\\s*//\\s*fix\\b\n").unwrap();
-                        f.write_all(b"(?i)^\\s*//\\s*fixme\\b\n").unwrap();
+                        f.write_all(b"(?i)\\s*//\\s*todo\\b\n").unwrap();
+                        f.write_all(b"(?i)\\s*//\\s*fix\\b\n").unwrap();
+                        f.write_all(b"(?i)\\s*//\\s*fixme\\b\n").unwrap();
                         return read_lines(filename);
                     }
                 };
