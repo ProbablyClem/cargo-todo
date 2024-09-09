@@ -90,7 +90,7 @@ todo!("implement getters");
 ```
 ### run
 ```rust
-$ cargo todo --legacy
+$ cargo todo legacy
 src/main.rs TODO Line  125 : implement getters
 ```
 ## Supported tokens
